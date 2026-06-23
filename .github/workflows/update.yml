@@ -1,4 +1,5 @@
 name: Actualizar datos y desplegar
+# Baloto · scraper + deploy a Pages (cron mar/jue/dom)
 
 on:
   schedule:
