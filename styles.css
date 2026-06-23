@@ -1,0 +1,82 @@
+:root {
+  --bg: #0b1020;
+  --panel: #141b33;
+  --panel2: #1b2444;
+  --txt: #e8ecf7;
+  --muted: #9aa6c7;
+  --accent: #ffcc00;
+  --red: #ff4d6d;
+  --green: #2ee6a6;
+  --blue: #4da3ff;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: radial-gradient(1200px 600px at 50% -10%, #1a2347 0%, var(--bg) 60%);
+  color: var(--txt);
+  line-height: 1.5;
+}
+.hero { text-align: center; padding: 36px 16px 8px; }
+.hero h1 { margin: 0; font-size: 1.9rem; }
+.hero .sub { color: var(--muted); margin: 6px 0 0; }
+.hero .meta { color: var(--muted); font-size: .85rem; margin-top: 8px; }
+
+.disclaimer {
+  max-width: 920px; margin: 14px auto; padding: 12px 16px;
+  background: rgba(255, 77, 109, .12); border: 1px solid rgba(255,77,109,.4);
+  border-radius: 12px; color: #ffd9e0; font-size: .9rem;
+}
+.disclaimer strong { color: #fff; }
+
+main { max-width: 1000px; margin: 0 auto; padding: 8px 16px 60px; }
+
+.controls { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin: 10px 0 18px; }
+.seg { display: inline-flex; background: var(--panel); border-radius: 10px; padding: 4px; }
+.seg button {
+  background: transparent; color: var(--muted); border: 0; padding: 8px 16px;
+  border-radius: 8px; cursor: pointer; font-weight: 600;
+}
+.seg button.active { background: var(--accent); color: #1a1300; }
+.rango { color: var(--muted); }
+.rango select {
+  background: var(--panel); color: var(--txt); border: 1px solid var(--panel2);
+  border-radius: 8px; padding: 7px 10px; margin-left: 6px;
+}
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 12px; margin-bottom: 18px; }
+.card { background: var(--panel); border-radius: 14px; padding: 14px 16px; }
+.card .v { font-size: 1.5rem; font-weight: 700; }
+.card .k { color: var(--muted); font-size: .8rem; }
+
+.panel { background: var(--panel); border-radius: 16px; padding: 18px; margin-bottom: 18px; }
+.panel h2 { margin: 0 0 12px; font-size: 1.05rem; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+@media (max-width: 720px) { .grid2 { grid-template-columns: 1fr; } }
+
+.ranklist { list-style: none; margin: 0; padding: 0; }
+.ranklist li { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--panel2); }
+.ranklist li:last-child { border-bottom: 0; }
+.ball {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 34px; height: 34px; border-radius: 50%;
+  background: var(--blue); color: #06122a; font-weight: 700;
+}
+.ball.red { background: var(--red); color: #2a0009; }
+.ranklist .bar { flex: 1; height: 8px; background: var(--panel2); border-radius: 6px; overflow: hidden; }
+.ranklist .bar > i { display: block; height: 100%; background: var(--accent); }
+.ranklist .n { color: var(--muted); font-variant-numeric: tabular-nums; min-width: 64px; text-align: right; font-size: .85rem; }
+
+.jugada .hint { color: var(--muted); font-size: .85rem; margin-top: 0; }
+.balotas { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0; min-height: 44px; }
+.balotas .ball { width: 44px; height: 44px; font-size: 1.05rem; }
+.jugada-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.jugada-actions button {
+  background: var(--panel2); color: var(--txt); border: 1px solid #2a356a;
+  border-radius: 10px; padding: 9px 14px; cursor: pointer; font-weight: 600;
+}
+.jugada-actions button:hover { border-color: var(--accent); }
+.prob { color: var(--muted); font-size: .85rem; margin-top: 12px; }
+
+footer { text-align: center; color: var(--muted); padding: 24px 16px 40px; font-size: .85rem; }
+footer a { color: var(--blue); }

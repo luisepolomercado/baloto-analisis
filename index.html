@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Baloto · Analítica de Tendencias</title>
+  <meta name="description" content="Análisis de tendencias de balotas del Baloto Colombia: frecuencias, números calientes, fríos y atrasados." />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <header class="hero">
+    <h1>🎰 Baloto · Analítica de Tendencias</h1>
+    <p class="sub">Frecuencias, números calientes, fríos y atrasados del Baloto Colombia.</p>
+    <p class="meta" id="meta">Cargando datos…</p>
+  </header>
+
+  <div class="disclaimer">
+    ⚠️ <strong>Honestidad ante todo:</strong> cada sorteo es <em>independiente</em>. Las "tendencias"
+    de las balotas <strong>no cambian la probabilidad</strong> de ganar — el premio mayor sigue siendo
+    <strong>1 entre 15.401.568</strong>. Esto es para explorar datos y divertirse, no una fórmula para ganar.
+  </div>
+
+  <main>
+    <section class="controls">
+      <div class="seg" id="tipo">
+        <button data-tipo="baloto" class="active">Baloto</button>
+        <button data-tipo="revancha">Revancha</button>
+      </div>
+      <label class="rango">
+        Ventana:
+        <select id="ventana">
+          <option value="0">Todo el histórico</option>
+          <option value="120">Últimos 120 sorteos</option>
+          <option value="60">Últimos 60 sorteos</option>
+          <option value="30">Últimos 30 sorteos</option>
+        </select>
+      </label>
+    </section>
+
+    <section class="cards" id="kpis"></section>
+
+    <section class="panel">
+      <h2>Frecuencia de balotas (1–43)</h2>
+      <canvas id="chartBalotas" height="120"></canvas>
+    </section>
+
+    <section class="grid2">
+      <div class="panel">
+        <h2>🔥 Calientes (más frecuentes)</h2>
+        <ol class="ranklist" id="calientes"></ol>
+      </div>
+      <div class="panel">
+        <h2>🧊 Frías (menos frecuentes)</h2>
+        <ol class="ranklist" id="frias"></ol>
+      </div>
+    </section>
+
+    <section class="grid2">
+      <div class="panel">
+        <h2>⏳ Atrasadas (sorteos sin salir)</h2>
+        <ol class="ranklist" id="atrasadas"></ol>
+      </div>
+      <div class="panel">
+        <h2>⭐ Frecuencia Superbalota (1–16)</h2>
+        <canvas id="chartSuper" height="180"></canvas>
+      </div>
+    </section>
+
+    <section class="panel jugada">
+      <h2>🎟️ Jugada sugerida</h2>
+      <p class="hint">Combina balotas calientes y atrasadas. Recuerda: estadísticamente vale lo mismo que cualquier otra combinación.</p>
+      <div class="balotas" id="jugada"></div>
+      <div class="jugada-actions">
+        <button id="genHot">Por frecuencia</button>
+        <button id="genRandom">Aleatoria pura</button>
+        <button id="genMixed">Mixta</button>
+      </div>
+      <p class="prob" id="prob"></p>
+    </section>
+  </main>
+
+  <footer>
+    <p>Fuente: <a id="fuente" href="https://baloto.com/resultados" target="_blank" rel="noopener">baloto.com</a> ·
+    Proyecto educativo de análisis de datos. Juega con responsabilidad.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
