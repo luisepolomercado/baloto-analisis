@@ -5,7 +5,11 @@ const MAX_SUPER = 16;    // superbalota 1..16
 const PICK = 5;          // se eligen 5 balotas
 
 const state = { data: null, tipo: "baloto", ventana: 0 };
-let chartBalotas = null, chartSuper = null;
+const charts = {}; // registro de instancias Chart.js por id de canvas
+function setChart(id, config) {
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart(document.getElementById(id), config);
+}
 
 // C(n, k)
 function comb(n, k) {
@@ -30,7 +34,8 @@ async function load() {
 
 function sorteosFiltrados() {
   let arr = state.data.sorteos.filter((s) => s.tipo === state.tipo);
-  arr.sort((a, b) => a.sorteo - b.sorteo);
+  // Orden cronológico por fecha (el histórico 2017-2021 no trae nº de sorteo).
+  arr.sort((a, b) => (a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : 0));
   if (state.ventana > 0) arr = arr.slice(-state.ventana);
   return arr;
 }
@@ -87,20 +92,65 @@ function renderKpis(arr, stats) {
 
 function renderCharts(stats) {
   const labels = Array.from({ length: MAX_BALOTA }, (_, i) => i + 1);
-  const data = labels.map((n) => stats.freq[n]);
-  if (chartBalotas) chartBalotas.destroy();
-  chartBalotas = new Chart(document.getElementById("chartBalotas"), {
+  setChart("chartBalotas", {
     type: "bar",
-    data: { labels, datasets: [{ label: "Veces que salió", data, backgroundColor: "#ffcc00" }] },
+    data: { labels, datasets: [{ label: "Veces que salió", data: labels.map((n) => stats.freq[n]), backgroundColor: "#ffcc00" }] },
     options: chartOpts(),
   });
 
   const sLabels = Array.from({ length: MAX_SUPER }, (_, i) => i + 1);
-  const sData = sLabels.map((n) => stats.freqSuper[n]);
-  if (chartSuper) chartSuper.destroy();
-  chartSuper = new Chart(document.getElementById("chartSuper"), {
+  setChart("chartSuper", {
     type: "bar",
-    data: { labels: sLabels, datasets: [{ label: "Veces", data: sData, backgroundColor: "#ff4d6d" }] },
+    data: { labels: sLabels, datasets: [{ label: "Veces", data: sLabels.map((n) => stats.freqSuper[n]), backgroundColor: "#ff4d6d" }] },
+    options: chartOpts(),
+  });
+}
+
+// ---- gráficas de patrones de las combinaciones ----
+function renderPatrones(arr) {
+  // Suma de las 5 balotas: histograma agrupado de a 10
+  const sumas = arr.map((s) => s.balotas.reduce((a, b) => a + b, 0));
+  const minB = 10, maxB = 215; // rango teórico (1+2+3+4+5 .. 39+40+41+42+43)
+  const buckets = {};
+  for (let lo = Math.floor(minB / 10) * 10; lo <= maxB; lo += 10) buckets[lo] = 0;
+  sumas.forEach((v) => { const lo = Math.floor(v / 10) * 10; buckets[lo] = (buckets[lo] || 0) + 1; });
+  const sLabels = Object.keys(buckets).map(Number).sort((a, b) => a - b);
+  setChart("chartSuma", {
+    type: "bar",
+    data: { labels: sLabels.map((l) => `${l}-${l + 9}`), datasets: [{ data: sLabels.map((l) => buckets[l]), backgroundColor: "#4da3ff" }] },
+    options: chartOpts(),
+  });
+
+  // Pares por sorteo (0..5)
+  const pares = Array(6).fill(0);
+  arr.forEach((s) => { pares[s.balotas.filter((b) => b % 2 === 0).length]++; });
+  setChart("chartPar", {
+    type: "bar",
+    data: { labels: ["0", "1", "2", "3", "4", "5"], datasets: [{ data: pares, backgroundColor: "#2ee6a6" }] },
+    options: chartOpts(),
+  });
+
+  // Distribución por decenas
+  const rangos = [[1, 9], [10, 19], [20, 29], [30, 39], [40, 43]];
+  const dec = rangos.map(([lo, hi]) => arr.reduce((acc, s) => acc + s.balotas.filter((b) => b >= lo && b <= hi).length, 0));
+  setChart("chartDec", {
+    type: "bar",
+    data: { labels: rangos.map(([lo, hi]) => `${lo}–${hi}`), datasets: [{ data: dec, backgroundColor: "#ffcc00" }] },
+    options: chartOpts(),
+  });
+
+  // Promedio de la suma por año (tendencia temporal)
+  const porAnio = {};
+  arr.forEach((s) => {
+    const y = s.fecha.slice(0, 4);
+    const suma = s.balotas.reduce((a, b) => a + b, 0);
+    (porAnio[y] = porAnio[y] || []).push(suma);
+  });
+  const anios = Object.keys(porAnio).sort();
+  const prom = anios.map((y) => Math.round(porAnio[y].reduce((a, b) => a + b, 0) / porAnio[y].length));
+  setChart("chartYear", {
+    type: "line",
+    data: { labels: anios, datasets: [{ data: prom, borderColor: "#ff4d6d", backgroundColor: "rgba(255,77,109,.2)", tension: 0.3, fill: true, pointRadius: 4 }] },
     options: chartOpts(),
   });
 }
@@ -152,6 +202,7 @@ function render() {
   const stats = calcularEstadisticas(arr);
   renderKpis(arr, stats);
   renderCharts(stats);
+  renderPatrones(arr);
 
   const maxFreq = Math.max(...stats.freq.slice(1));
   const porFreq = stats.atrasadas.slice().sort((a, b) => b.freq - a.freq);

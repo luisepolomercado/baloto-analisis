@@ -5,6 +5,8 @@ on:
   schedule:
     # Sorteos: lun/mié/sáb ~23:00 hora Colombia (UTC-5). Raspamos la mañana siguiente (UTC).
     - cron: "0 12 * * 2,4,0"   # mar, jue, dom — 12:00 UTC (07:00 Colombia)
+  push:
+    branches: [master]          # despliega al pushear cambios de código/datos
   workflow_dispatch: {}          # permite ejecutarlo manualmente
 
 permissions:
@@ -37,7 +39,7 @@ jobs:
           if git diff --staged --quiet; then
             echo "Sin cambios en los datos."
           else
-            git commit -m "chore: actualizar resultados Baloto ($(date -u +%F))"
+            git commit -m "chore: actualizar resultados Baloto ($(date -u +%F)) [skip ci]"
             git push
           fi
 

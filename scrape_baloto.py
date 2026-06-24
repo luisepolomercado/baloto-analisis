@@ -22,6 +22,7 @@ from datetime import date, datetime, timezone
 BASE = "https://baloto.com/resultados"
 OUT = "baloto_resultados.csv"
 JSON_OUT = os.path.join("data", "resultados.json")
+HIST_FILE = os.path.join("data", "historico_2017_2021.json")
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) BalotoHistoryScraper/1.0"
 
 MESES = {
@@ -118,16 +119,7 @@ def main():
             print(f"  pagina {page}/{ultima} - acumulados {len(registros)} registros")
         time.sleep(0.4)  # cortesia con el servidor
 
-    registros.sort(key=lambda r: (r[0], r[2]))
-
-    with open(OUT, "w", newline="", encoding="utf-8") as f:
-        w = csv.writer(f)
-        w.writerow(["sorteo", "fecha", "tipo", "n1", "n2", "n3", "n4", "n5", "superbalota"])
-        w.writerows(registros)
-
-    # JSON para el frontend (data/resultados.json)
-    os.makedirs(os.path.dirname(JSON_OUT), exist_ok=True)
-    sorteos = [
+    oficiales = [
         {
             "sorteo": r[0],
             "fecha": r[1],
@@ -137,6 +129,31 @@ def main():
         }
         for r in registros
     ]
+
+    # Fusionar con el histórico antiguo (2017-2021), estático y autoritativo
+    # para las fechas que el sitio oficial ya no conserva. El oficial gana en
+    # cualquier solape (clave: fecha + tipo).
+    por_clave = {}
+    if os.path.exists(HIST_FILE):
+        with open(HIST_FILE, encoding="utf-8") as f:
+            historicos = json.load(f)
+        for h in historicos:
+            por_clave[(h["fecha"], h["tipo"])] = h
+        print(f"Fusionando {len(historicos)} registros históricos de {HIST_FILE}")
+    for o in oficiales:
+        por_clave[(o["fecha"], o["tipo"])] = o
+    sorteos = sorted(por_clave.values(), key=lambda s: (s["fecha"], s["tipo"]))
+
+    # CSV (histórico completo fusionado)
+    with open(OUT, "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(["sorteo", "fecha", "tipo", "n1", "n2", "n3", "n4", "n5", "superbalota"])
+        for s in sorteos:
+            w.writerow([s["sorteo"] if s["sorteo"] is not None else "",
+                        s["fecha"], s["tipo"], *s["balotas"], s["superbalota"]])
+
+    # JSON para el frontend (data/resultados.json)
+    os.makedirs(os.path.dirname(JSON_OUT), exist_ok=True)
     payload = {
         "actualizado": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "fuente": BASE,
@@ -150,9 +167,10 @@ def main():
     with open(JSON_OUT, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, separators=(",", ":"))
 
-    print(f"\nListo: {len(registros)} registros -> {OUT} y {JSON_OUT}")
-    if registros:
-        print(f"Rango de sorteos: {registros[0][0]} a {registros[-1][0]}")
+    print(f"\nListo: {len(oficiales)} oficiales + históricos -> {len(sorteos)} totales")
+    print(f"  -> {OUT} y {JSON_OUT}")
+    if sorteos:
+        print(f"Rango de fechas: {sorteos[0]['fecha']} .. {sorteos[-1]['fecha']}")
 
 
 if __name__ == "__main__":
