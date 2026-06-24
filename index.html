@@ -68,24 +68,16 @@
     </section>
 
     <section class="panel">
-      <h2>📊 Patrones de las combinaciones ganadoras</h2>
-      <div class="charts-grid">
-        <div class="mini">
-          <h3>Suma de las 5 balotas</h3>
-          <canvas id="chartSuma" height="200"></canvas>
-        </div>
-        <div class="mini">
-          <h3>Pares por sorteo (0–5)</h3>
-          <canvas id="chartPar" height="200"></canvas>
-        </div>
-        <div class="mini">
-          <h3>Distribución por decenas</h3>
-          <canvas id="chartDec" height="200"></canvas>
-        </div>
-        <div class="mini">
-          <h3>Promedio de la suma por año (tendencia)</h3>
-          <canvas id="chartYear" height="200"></canvas>
-        </div>
+      <h2>🏆 ¿Cuándo cayó el Baloto? (premio mayor ganado)</h2>
+      <p class="hint" id="ganInfo">Cargando…</p>
+      <div class="cards" id="ganKpis"></div>
+      <div class="tabla-wrap">
+        <table class="ganadores" id="tablaGan">
+          <thead>
+            <tr><th>Fecha</th><th>Juego</th><th>Números ganadores</th><th>Ganadores</th><th>Premio</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
       </div>
     </section>
 

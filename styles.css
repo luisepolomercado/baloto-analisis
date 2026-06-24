@@ -67,10 +67,13 @@ main { max-width: 1000px; margin: 0 auto; padding: 8px 16px 60px; }
 .ranklist .bar > i { display: block; height: 100%; background: var(--accent); }
 .ranklist .n { color: var(--muted); font-variant-numeric: tabular-nums; min-width: 64px; text-align: right; font-size: .85rem; }
 
-.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-@media (max-width: 720px) { .charts-grid { grid-template-columns: 1fr; } }
-.mini { background: var(--panel2); border-radius: 12px; padding: 12px 14px; }
-.mini h3 { margin: 0 0 8px; font-size: .9rem; color: var(--muted); font-weight: 600; }
+.tabla-wrap { overflow-x: auto; }
+table.ganadores { width: 100%; border-collapse: collapse; font-size: .9rem; }
+table.ganadores th, table.ganadores td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--panel2); white-space: nowrap; }
+table.ganadores th { color: var(--muted); font-weight: 600; font-size: .8rem; text-transform: uppercase; letter-spacing: .03em; }
+table.ganadores tbody tr:hover { background: rgba(255,255,255,.03); }
+.celdaballs { display: flex; gap: 6px; }
+.celdaballs .ball { width: 30px; height: 30px; font-size: .85rem; }
 
 .jugada .hint { color: var(--muted); font-size: .85rem; margin-top: 0; }
 .balotas { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0; min-height: 44px; }

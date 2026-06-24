@@ -30,6 +30,7 @@ async function load() {
   document.getElementById("meta").textContent =
     `${fmt(state.data.total)} registros · ${d0} → ${d1} · actualizado ${new Date(state.data.actualizado).toLocaleString("es-CO")}`;
   render();
+  renderGanadores();
 }
 
 function sorteosFiltrados() {
@@ -106,53 +107,62 @@ function renderCharts(stats) {
   });
 }
 
-// ---- gráficas de patrones de las combinaciones ----
-function renderPatrones(arr) {
-  // Suma de las 5 balotas: histograma agrupado de a 10
-  const sumas = arr.map((s) => s.balotas.reduce((a, b) => a + b, 0));
-  const minB = 10, maxB = 215; // rango teórico (1+2+3+4+5 .. 39+40+41+42+43)
-  const buckets = {};
-  for (let lo = Math.floor(minB / 10) * 10; lo <= maxB; lo += 10) buckets[lo] = 0;
-  sumas.forEach((v) => { const lo = Math.floor(v / 10) * 10; buckets[lo] = (buckets[lo] || 0) + 1; });
-  const sLabels = Object.keys(buckets).map(Number).sort((a, b) => a - b);
-  setChart("chartSuma", {
-    type: "bar",
-    data: { labels: sLabels.map((l) => `${l}-${l + 9}`), datasets: [{ data: sLabels.map((l) => buckets[l]), backgroundColor: "#4da3ff" }] },
-    options: chartOpts(),
-  });
+const NOMBRE = { baloto: "Baloto", revancha: "Revancha" };
+function pesos(v) { return "$" + (v || 0).toLocaleString("es-CO"); }
 
-  // Pares por sorteo (0..5)
-  const pares = Array(6).fill(0);
-  arr.forEach((s) => { pares[s.balotas.filter((b) => b % 2 === 0).length]++; });
-  setChart("chartPar", {
-    type: "bar",
-    data: { labels: ["0", "1", "2", "3", "4", "5"], datasets: [{ data: pares, backgroundColor: "#2ee6a6" }] },
-    options: chartOpts(),
-  });
+// ---- ¿Cuándo cayó el premio mayor? (usa TODO el histórico, no el filtro) ----
+function renderGanadores() {
+  const todos = state.data.sorteos;
+  const conPremio = todos.filter((s) => s.premio_mayor);
+  const ganados = conPremio
+    .filter((s) => s.premio_mayor.ganadores > 0)
+    .sort((a, b) => (a.fecha < b.fecha ? 1 : -1)); // más reciente primero
 
-  // Distribución por decenas
-  const rangos = [[1, 9], [10, 19], [20, 29], [30, 39], [40, 43]];
-  const dec = rangos.map(([lo, hi]) => arr.reduce((acc, s) => acc + s.balotas.filter((b) => b >= lo && b <= hi).length, 0));
-  setChart("chartDec", {
-    type: "bar",
-    data: { labels: rangos.map(([lo, hi]) => `${lo}–${hi}`), datasets: [{ data: dec, backgroundColor: "#ffcc00" }] },
-    options: chartOpts(),
-  });
+  const info = document.getElementById("ganInfo");
+  const tbody = document.querySelector("#tablaGan tbody");
 
-  // Promedio de la suma por año (tendencia temporal)
-  const porAnio = {};
-  arr.forEach((s) => {
-    const y = s.fecha.slice(0, 4);
-    const suma = s.balotas.reduce((a, b) => a + b, 0);
-    (porAnio[y] = porAnio[y] || []).push(suma);
-  });
-  const anios = Object.keys(porAnio).sort();
-  const prom = anios.map((y) => Math.round(porAnio[y].reduce((a, b) => a + b, 0) / porAnio[y].length));
-  setChart("chartYear", {
-    type: "line",
-    data: { labels: anios, datasets: [{ data: prom, borderColor: "#ff4d6d", backgroundColor: "rgba(255,77,109,.2)", tension: 0.3, fill: true, pointRadius: 4 }] },
-    options: chartOpts(),
-  });
+  if (conPremio.length === 0) {
+    info.textContent = "Aún no hay datos de premios (se están descargando). Vuelve a cargar en un momento.";
+    tbody.innerHTML = "";
+    document.getElementById("ganKpis").innerHTML = "";
+    return;
+  }
+
+  // racha actual de acumulados del Baloto (sorteos seguidos sin caer, desde el último)
+  const balotoCron = conPremio
+    .filter((s) => s.tipo === "baloto")
+    .sort((a, b) => (a.fecha < b.fecha ? -1 : 1));
+  let rachaActual = 0;
+  for (let i = balotoCron.length - 1; i >= 0; i--) {
+    if (balotoCron[i].premio_mayor.ganadores > 0) break;
+    rachaActual++;
+  }
+  const ultimoBaloto = [...balotoCron].reverse().find((s) => s.premio_mayor.ganadores > 0);
+
+  const kpis = [
+    { k: "Veces que cayó el premio mayor", v: ganados.length },
+    { k: "Sorteos de Baloto con datos", v: balotoCron.length },
+    { k: "Último Baloto ganado", v: ultimoBaloto ? ultimoBaloto.fecha : "—" },
+    { k: "Acumulados seguidos (hoy)", v: rachaActual },
+  ];
+  document.getElementById("ganKpis").innerHTML = kpis
+    .map((c) => `<div class="card"><div class="v">${c.v}</div><div class="k">${c.k}</div></div>`)
+    .join("");
+
+  info.innerHTML = `Lista de sorteos donde <strong>alguien acertó las 5 balotas + superbalota</strong> ` +
+    `(${ganados.length} de ${conPremio.length} sorteos con datos, desde 2021). ` +
+    `Las cifras de ganadores y premios son las publicadas oficialmente por baloto.com.`;
+
+  tbody.innerHTML = ganados.map((s) => {
+    const balls = s.balotas.map((b) => ball(b)).join("") + ball(s.superbalota, true);
+    return `<tr>
+      <td>${s.fecha}</td>
+      <td>${NOMBRE[s.tipo] || s.tipo}</td>
+      <td class="celdaballs">${balls}</td>
+      <td>${s.premio_mayor.ganadores}</td>
+      <td>${pesos(s.premio_mayor.valor)}</td>
+    </tr>`;
+  }).join("");
 }
 
 function chartOpts() {
@@ -202,7 +212,6 @@ function render() {
   const stats = calcularEstadisticas(arr);
   renderKpis(arr, stats);
   renderCharts(stats);
-  renderPatrones(arr);
 
   const maxFreq = Math.max(...stats.freq.slice(1));
   const porFreq = stats.atrasadas.slice().sort((a, b) => b.freq - a.freq);

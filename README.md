@@ -12,11 +12,20 @@ generador de "jugada sugerida".
 ## Estructura
 
 ```
-scrape_baloto.py        # scraper → baloto_resultados.csv + data/resultados.json
+scrape_baloto.py        # oficial reciente + fusiona histórico → CSV + data/resultados.json
+scrape_historico.py     # histórico antiguo 2017-2021 (fuente secundaria) → data/historico_2017_2021.json
+scrape_premios.py       # ganadores del premio mayor por sorteo (incremental) → data/premios.json
 index.html · app.js · styles.css   # landing estática (Chart.js por CDN)
-data/resultados.json    # datos que consume la web
+data/resultados.json    # datos fusionados que consume la web
 .github/workflows/update.yml        # cron + deploy a GitHub Pages
 ```
+
+### Datos de ganadores (¿cuándo cayó el premio mayor?)
+`scrape_premios.py` lee el desglose oficial de cada sorteo y registra, para la
+categoría **"5 + SB"** (premio mayor), cuántos ganadores hubo y el monto. Cachea
+en `data/premios.json` (keyed por `tipo:sorteo`) para que el cron solo consulte
+los sorteos nuevos. Solo cubre el periodo oficial (2021→), porque la fuente del
+histórico antiguo no publica ganadores.
 
 ## Uso local
 
