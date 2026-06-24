@@ -81,6 +81,31 @@
       </div>
     </section>
 
+    <section class="panel">
+      <h2>🔁 Números más repetidos ENTRE las jugadas ganadoras</h2>
+      <p class="hint" id="ganFreqInfo">Cargando…</p>
+      <div class="grid2">
+        <div class="mini">
+          <h3>Balotas en jugadas ganadoras (1–43)</h3>
+          <canvas id="chartGanBalotas" height="200"></canvas>
+        </div>
+        <div class="mini">
+          <h3>Superbalota ganadora (1–16)</h3>
+          <canvas id="chartGanSuper" height="200"></canvas>
+        </div>
+      </div>
+      <div class="ganfreq-top">
+        <div>
+          <h3>🔥 Más repetidas en ganadoras</h3>
+          <div class="balotas" id="ganTop"></div>
+        </div>
+        <div>
+          <h3>🚫 Nunca han ganado</h3>
+          <div class="balotas" id="ganNunca"></div>
+        </div>
+      </div>
+    </section>
+
     <section class="panel jugada">
       <h2>🎟️ Jugada sugerida</h2>
       <p class="hint">Combina balotas calientes y atrasadas. Recuerda: estadísticamente vale lo mismo que cualquier otra combinación.</p>

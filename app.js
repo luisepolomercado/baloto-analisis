@@ -163,6 +163,49 @@ function renderGanadores() {
       <td>${pesos(s.premio_mayor.valor)}</td>
     </tr>`;
   }).join("");
+
+  renderGanadoresFreq(ganados);
+}
+
+// Frecuencia de números DENTRO de las jugadas que ganaron el premio mayor
+function renderGanadoresFreq(ganados) {
+  const freq = Array(MAX_BALOTA + 1).fill(0);
+  const fsup = Array(MAX_SUPER + 1).fill(0);
+  ganados.forEach((s) => {
+    s.balotas.forEach((b) => { if (b >= 1 && b <= MAX_BALOTA) freq[b]++; });
+    if (s.superbalota >= 1 && s.superbalota <= MAX_SUPER) fsup[s.superbalota]++;
+  });
+
+  const bl = Array.from({ length: MAX_BALOTA }, (_, i) => i + 1);
+  setChart("chartGanBalotas", {
+    type: "bar",
+    data: { labels: bl, datasets: [{ data: bl.map((n) => freq[n]), backgroundColor: "#2ee6a6" }] },
+    options: chartOpts(),
+  });
+  const sl = Array.from({ length: MAX_SUPER }, (_, i) => i + 1);
+  setChart("chartGanSuper", {
+    type: "bar",
+    data: { labels: sl, datasets: [{ data: sl.map((n) => fsup[n]), backgroundColor: "#ff4d6d" }] },
+    options: chartOpts(),
+  });
+
+  // top repetidas (con su conteo) y las que nunca ganaron
+  const conConteo = bl.map((n) => ({ n, c: freq[n] }));
+  const maxC = Math.max(...conConteo.map((x) => x.c));
+  const top = conConteo.filter((x) => x.c >= 1).sort((a, b) => b.c - a.c).slice(0, 8);
+  const nunca = conConteo.filter((x) => x.c === 0).map((x) => x.n);
+
+  document.getElementById("ganTop").innerHTML = top
+    .map((x) => `<span class="ball" title="${x.c} veces">${String(x.n).padStart(2, "0")}<sup>${x.c}</sup></span>`)
+    .join("");
+  document.getElementById("ganNunca").innerHTML = nunca.length
+    ? nunca.map((n) => `<span class="ball cold">${String(n).padStart(2, "0")}</span>`).join("")
+    : "<span class='hint'>Todas han aparecido al menos una vez.</span>";
+
+  document.getElementById("ganFreqInfo").innerHTML =
+    `Frecuencia de cada número dentro de las <strong>${ganados.length} combinaciones que ganaron</strong> el premio mayor ` +
+    `(${ganados.length * 5} apariciones de balota en total). La más repetida salió ${maxC} veces. ` +
+    `<em>Ojo: son solo ${ganados.length} casos — muy pocos para predecir nada, pero curioso de ver.</em>`;
 }
 
 function chartOpts() {

@@ -75,6 +75,14 @@ table.ganadores tbody tr:hover { background: rgba(255,255,255,.03); }
 .celdaballs { display: flex; gap: 6px; }
 .celdaballs .ball { width: 30px; height: 30px; font-size: .85rem; }
 
+.mini { background: var(--panel2); border-radius: 12px; padding: 12px 14px; }
+.mini h3 { margin: 0 0 8px; font-size: .9rem; color: var(--muted); font-weight: 600; }
+.ganfreq-top { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 16px; }
+@media (max-width: 720px) { .ganfreq-top { grid-template-columns: 1fr; } }
+.ganfreq-top h3 { font-size: .9rem; margin: 0 0 8px; }
+.ball sup { font-size: .6rem; margin-left: 1px; opacity: .85; }
+.ball.cold { background: #2a356a; color: var(--muted); }
+
 .jugada .hint { color: var(--muted); font-size: .85rem; margin-top: 0; }
 .balotas { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0; min-height: 44px; }
 .balotas .ball { width: 44px; height: 44px; font-size: 1.05rem; }
